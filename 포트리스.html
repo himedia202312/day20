@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #wrapper{
+            width:1600px;
+            height:1000px;
+            background-color: yellow;
+            margin: auto;
+            border:5px solid red;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="./GameObject.js"></script>
+    <script src="./InfoBox.js"></script>
+    <script src="./Hero.js"></script>
+    <script src="./Cannon.js"></script>
+    <script src="./Bullet.js"></script>
+    <script>
+        let wrapper;
+        let hero;
+        let gameFlag=true; //게임을 pause, start 결정 짓는 논리값
+        let deg=0; //각도 조절용 변수
+        let infoBox; //정보 출력 객체를 접근하기 위한 전역변수
+        let bulletArray=[];//총알을 누적할 배열 
+        let g=0.02; //중력
+
+        function createInfoBox(){
+            //container, src, x, y, width, height, velX, velY
+            infoBox = new InfoBox(wrapper,"",1450, 500, 150,90,0,0);
+        }
+
+        function createHero(){
+            hero = new Hero(wrapper, "", 1500, 700, 10,10, 0,0, "blue");
+        }
+        
+        function fire(){
+            
+            let bullet = new Bullet(wrapper, "", hero.x, hero.y, 20,20,-10,-3,"red");
+            bulletArray.push(bullet); //총알 배열에 추가 
+            
+            //지금 현재의 각도를 이용하여  
+            //SIN() Y 값을 결정, COS X값을 결정
+
+            //호도법을 이용한 값을 적용해야함..  
+            bullet.velX=-Math.cos(hero.cannon.deg * (Math.PI/180)); //각도를 360분법으로 사용하면 안되면, 
+            bullet.velY=-Math.sin(hero.cannon.deg * (Math.PI/180));
+
+        }
+
+        function gameLoop(){
+            if(gameFlag){
+                //console.log("gameLoop() call...");
+                hero.cannon.setDegree(deg);
+
+                //존재하는 모든 총알에 대해 move() 호출 ..
+                for(let i=0;i<bulletArray.length;i++){
+                    bulletArray[i].move();
+                }
+            }
+        }
+
+        $(function(){
+            wrapper = document.getElementById("wrapper");
+            
+            createInfoBox();//정보 출력 객체 
+            createHero(); //주인공 등장
+
+            //키보드 연결 
+            document.body.addEventListener("keydown", function(e){
+                switch(e.keyCode){
+                    case 27: gameFlag=!gameFlag ;break; //pause, start 조절 
+                    case 38: deg=1 ;break; //각도 증가
+                    case 40: deg=-1 ;break; //각도 감소
+                    case 32: fire(); break; //총알 발사
+                }
+            });
+
+            document.body.addEventListener("keyup", function(e){
+                switch(e.keyCode){
+                    case 38: deg=0 ;break; //각도 증가
+                    case 40: deg=-0 ;break; //각도 감소
+                }
+            });
+
+
+            setInterval("gameLoop()", 10);
+        });
+    </script>
+</head>
+<body>
+    <div id="wrapper"></div>
+</body>
+</html>
